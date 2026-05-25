@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a2332">
+<title>InspectPro</title>
+<style>
+  :root {
+    --bg: #0f1923;
+    --surface: #1a2d3e;
+    --surface2: #1e3347;
+    --accent: #00c4ff;
+    --accent2: #0077aa;
+    --text: #e8f4fd;
+    --text-muted: #7faabf;
+    --border: #2a4a62;
+    --success: #00d47a;
+    --warning: #ffb347;
+    --danger: #ff5252;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3349 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px 14px;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .header-logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .header-logo svg { width: 20px; height: 20px; }
+  .header-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .header-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  /* STATUS PILL */
+  .status-pill {
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    letter-spacing: 0.3px;
+  }
+  .status-pill.connected { background: rgba(0,212,122,0.15); color: var(--success); border: 1px solid rgba(0,212,122,0.3); }
+  .status-pill.disconnected { background: rgba(255,82,82,0.15); color: var(--danger); border: 1px solid rgba(255,82,82,0.3); }
+
+  /* MAIN */
+  .main { padding: 20px 16px 100px; max-width: 480px; margin: 0 auto; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--text-muted);
+    margin: 24px 0 10px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* ONEDRIVE BTN */
+  .onedrive-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #0078d4 0%, #004fa8 100%);
+    border: none; border-radius: var(--radius);
+    color: white; font-size: 15px; font-weight: 600;
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .onedrive-btn:active { opacity: 0.85; transform: scale(0.99); }
+  .onedrive-btn svg { width: 24px; height: 24px; flex-shrink: 0; }
+
+  /* FORM ELEMENTS */
+  label { font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px; letter-spacing: 0.4px; }
+  select, input[type="text"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 15px;
+    padding: 12px 14px;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color 0.2s;
+  }
+  select:focus, input[type="text"]:focus { border-color: var(--accent); }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237faabf' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  select option { background: #1a2d3e; }
+  input[type="text"]::placeholder { color: var(--text-muted); }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group:last-child { margin-bottom: 0; }
+
+  /* TAG ROW */
+  .tag-row { display: flex; gap: 8px; }
+  .tag-row input { flex: 1; }
+  .tag-validate-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--accent);
+    font-size: 13px; font-weight: 600; padding: 0 14px;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  }
+  .tag-validate-btn:active { opacity: 0.7; }
+
+  /* TAG BADGE */
+  .tag-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,196,255,0.1); border: 1px solid rgba(0,196,255,0.3);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 13px; font-weight: 700; color: var(--accent);
+    font-family: 'Courier New', monospace;
+    margin-top: 8px;
+  }
+
+  /* MEDIA GRID */
+  .media-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .media-thumb {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .media-thumb img, .media-thumb video {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .media-thumb .remove-btn {
+    position: absolute; top: 4px; right: 4px;
+    width: 22px; height: 22px;
+    background: rgba(0,0,0,0.7); border: none;
+    border-radius: 50%; color: white; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 2;
+  }
+  .media-thumb .type-badge {
+    position: absolute; bottom: 4px; left: 4px;
+    background: rgba(0,0,0,0.6); border-radius: 4px;
+    font-size: 9px; font-weight: 700; padding: 2px 5px;
+    color: white; letter-spacing: 0.5px;
+  }
+  .media-add-btn {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    border: 2px dashed var(--border);
+    background: transparent;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px;
+    cursor: pointer; color: var(--text-muted); font-size: 11px;
+    font-weight: 600;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .media-add-btn:active { border-color: var(--accent); color: var(--accent); }
+  .media-add-btn svg { width: 24px; height: 24px; }
+
+  /* MEDIA BUTTONS ROW */
+  .media-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0; }
+  .media-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px; font-weight: 600;
+    padding: 14px 10px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    cursor: pointer; transition: border-color 0.2s;
+  }
+  .media-btn:active { border-color: var(--accent); }
+  .media-btn svg { width: 28px; height: 28px; color: var(--accent); }
+  .media-btn span { font-size: 11px; color: var(--text-muted); }
+
+  /* SAVE BUTTON */
+  .save-btn {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    padding: 16px 20px 32px;
+    background: linear-gradient(to top, var(--bg) 60%, transparent);
+    z-index: 100;
+  }
+  .save-btn button {
+    width: 100%; max-width: 480px; margin: 0 auto; display: block;
+    background: linear-gradient(135deg, var(--accent) 0%, #007acc 100%);
+    border: none; border-radius: var(--radius);
+    color: #fff; font-size: 16px; font-weight: 700;
+    padding: 18px 24px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.3px;
+    box-shadow: 0 8px 24px rgba(0,196,255,0.25);
+  }
+  .save-btn button:active { opacity: 0.9; transform: scale(0.99); }
+  .save-btn button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .save-btn button svg { width: 22px; height: 22px; }
+
+  /* PROGRESS */
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 12px;
+  }
+  .progress-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .progress-bar-wrap { background: var(--bg); border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 8px; }
+  .progress-bar { height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.3s; }
+  .progress-file { font-size: 11px; color: var(--text-muted); }
+
+  /* LOG */
+  .log { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; margin-top: 10px; max-height: 140px; overflow-y: auto; }
+  .log-line { font-size: 11px; font-family: monospace; padding: 2px 0; }
+  .log-line.ok { color: var(--success); }
+  .log-line.err { color: var(--danger); }
+  .log-line.info { color: var(--text-muted); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    padding: 24px 20px 48px;
+    width: 100%;
+    transform: translateY(40px);
+    transition: transform 0.25s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .modal-btn {
+    width: 100%; padding: 15px; border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 600; border: none; cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .modal-btn.primary { background: var(--accent); color: #000; }
+  .modal-btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-10px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px; font-weight: 500;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 300; white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: rgba(0,212,122,0.5); color: var(--success); }
+  .toast.error { border-color: rgba(255,82,82,0.5); color: var(--danger); }
+
+  /* EXCEL LOAD AREA */
+  .excel-drop {
+    border: 2px dashed var(--border); border-radius: var(--radius-sm);
+    padding: 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .excel-drop:active { border-color: var(--accent); }
+  .excel-drop svg { width: 32px; height: 32px; color: var(--text-muted); margin-bottom: 8px; }
+  .excel-drop-text { font-size: 13px; color: var(--text-muted); }
+  .excel-drop-text strong { color: var(--text); display: block; margin-bottom: 4px; }
+
+  /* COUNT BADGE */
+  .count-badge {
+    background: rgba(0,196,255,0.15); color: var(--accent);
+    border-radius: 20px; padding: 2px 8px;
+    font-size: 11px; font-weight: 700;
+  }
+
+  .hidden { display: none !important; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+
+  /* INPUT FILE HIDDEN */
+  input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#0f1923" stroke-width="2.5" stroke-linecap="round">
+      <path d="M9 2H5a2 2 0 00-2 2v16a2 2 0 002 2h14a2 2 0 002-2V9l-7-7z"/>
+      <path d="M9 2v7h7M12 12v5M9.5 14.5l2.5 2.5 2.5-2.5"/>
+    </svg>
+  </div>
+  <div>
+    <div class="header-title">InspectPro</div>
+    <div class="header-sub">Inspección de Equipos</div>
+  </div>
+  <div class="header-right">
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- EXCEL -->
+  <div id="excelUploadSection" class="hidden">
+    <div class="section-label flex-between">
+      <span>Base de datos equipos</span>
+      <span class="count-badge" id="equipCountBadge">0 equipos</span>
+    </div>
+    <div class="card">
+      <div class="excel-drop" onclick="document.getElementById('excelInput').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6M8 13h2.5l1.5 4 1.5-4H16"/></svg>
+        <div class="excel-drop-text">
+          <strong>Cargar base de datos</strong>
+          Toca para seleccionar .xlsx o .csv
+        </div>
+      </div>
+      <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" onchange="loadExcel(this)">
+      <div style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center;">
+        Una vez cargada, la base de datos quedará fija
+      </div>
+    </div>
+  </div>
+  <div id="excelFijoSection" class="hidden">
+    <div class="section-label flex-between">
+      <span>Base de datos equipos</span>
+      <span class="count-badge" id="equipCountBadge2"></span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6M8 13h2.5l1.5 4 1.5-4H16"/></svg>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;" id="excelFileNameFijo"></div>
+        <div style="font-size:11px;color:var(--success);margin-top:2px;">Base de datos cargada ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EQUIPO -->
+  <div class="section-label">Equipo</div>
+  <div class="card">
+    <div class="form-group">
+      <label>SELECCIONAR EQUIPO</label>
+      <select id="equipoSelect" onchange="onEquipoChange()">
+        <option value="">— Carga el Excel primero —</option>
+      </select>
+    </div>
+    <div class="form-group" id="tagGroup">
+      <label>TAG DEL INSTRUMENTO</label>
+      <div class="tag-row">
+        <input type="text" id="tagInput" placeholder="Ej: 2710-HS-002D1"
+          style="text-transform:uppercase;font-family:'Courier New',monospace;letter-spacing:0.5px;"
+          oninput="this.value=this.value.toUpperCase();validateTag()">
+        <button class="tag-validate-btn" onclick="validateTag(true)">✓ OK</button>
+      </div>
+      <div id="tagBadge" class="tag-badge hidden">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="tagBadgeText"></span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Formato: XXXX-XX-XXXXXX (ej. 2710-HS-002D1)</div>
+    </div>
+    <div class="form-group">
+      <label>NOTAS (OPCIONAL)</label>
+      <input type="text" id="notasInput" placeholder="Observaciones de inspección...">
+    </div>
+  </div>
+
+  <!-- MEDIA -->
+  <div class="section-label flex-between">
+    <span>Fotos y Videos</span>
+    <span class="count-badge" id="mediaCountBadge">0 archivos</span>
+  </div>
+  <div class="card">
+    <div class="media-btns">
+      <button class="media-btn" onclick="captureMedia('photo')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        Tomar Foto
+        <span>Cámara</span>
+      </button>
+      <button class="media-btn" onclick="captureMedia('video')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <polygon points="23 7 16 12 23 17 23 7"/>
+          <rect x="1" y="5" width="15" height="14" rx="2"/>
+        </svg>
+        Grabar Video
+        <span>Cámara</span>
+      </button>
+      <button class="media-btn" onclick="document.getElementById('galleryInput').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        Galería Fotos
+        <span>Librería</span>
+      </button>
+      <button class="media-btn" onclick="document.getElementById('galleryVideoInput').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.899L15 14"/>
+          <rect x="3" y="8" width="12" height="8" rx="2"/>
+        </svg>
+        Galería Videos
+        <span>Librería</span>
+      </button>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" capture="environment" multiple onchange="addFiles(this,'foto')">
+    <input type="file" id="videoInput" accept="video/*" capture="environment" onchange="addFiles(this,'video')">
+    <input type="file" id="galleryInput" accept="image/*" multiple onchange="addFiles(this,'foto')">
+    <input type="file" id="galleryVideoInput" accept="video/*" multiple onchange="addFiles(this,'video')">
+
+    <div class="media-grid" id="mediaGrid"></div>
+    <div id="emptyMedia" style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:13px;">
+      Sin archivos adjuntos todavía
+    </div>
+  </div>
+
+  <!-- ESTRUCTURA OneDrive -->
+  <div class="section-label">Destino en OneDrive</div>
+  <div class="card" id="pathCard">
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">La carpeta se creará automáticamente:</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;line-height:1.8;color:var(--accent);" id="pathPreview">
+      OneDrive/<br>
+      └── <span style="color:var(--text-muted);">[ Selecciona equipo ]</span>/
+    </div>
+  </div>
+
+  <!-- PROGRESO -->
+  <div id="progressSection" class="hidden">
+    <div class="section-label">Subiendo archivos</div>
+    <div class="progress-card">
+      <div class="flex-between progress-title">
+        <span>Progreso</span>
+        <span id="progressPct" style="color:var(--accent);font-size:13px;">0%</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+      <div class="progress-file" id="progressFile">Iniciando...</div>
+      <div class="log" id="uploadLog"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SAVE BUTTON -->
+<div class="save-btn">
+  <button id="saveBtn" onclick="guardar()" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/>
+      <polyline points="7 3 7 8 15 8"/>
+    </svg>
+    Guardar en OneDrive
+  </button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL INSTRUCCIONES -->
+<div class="modal-overlay" id="setupModal">
+  <div class="modal">
+    <div class="modal-title">⚙️ Configuración requerida</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">Para usar esta app con OneDrive necesitas registrar una aplicación en Azure AD y pegar tu <strong style="color:var(--text);">Client ID</strong> abajo.</p>
+    <div class="form-group">
+      <label>ID DE CLIENTE (AZURE AD)</label>
+      <input type="text" id="clientIdInput" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:'Courier New',monospace;font-size:13px;">
+    </div>
+    <div style="background:rgba(0,196,255,0.06);border:1px solid rgba(0,196,255,0.2);border-radius:8px;padding:12px;margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.7;">
+        1. Ve a <strong style="color:var(--accent);">portal.azure.com</strong><br>
+        2. Azure AD → Registros de aplicaciones → Nuevo registro<br>
+        3. Nombre: "InspectPro", Plataforma: Aplicación de página única (SPA)<br>
+        4. URI de redirección: <code style="color:var(--accent);font-size:11px;">https://login.microsoftonline.com/common/oauth2/nativeclient</code><br>
+        5. Permisos: Files.ReadWrite, User.Read<br>
+        6. Copia el <strong style="color:var(--accent);">Id. de aplicación (cliente)</strong>
+      </div>
+    </div>
+    <button class="modal-btn primary" onclick="saveClientId()">Guardar y continuar</button>
+    <button class="modal-btn secondary" onclick="closeSetupModal()">Usar modo demostración</button>
+  </div>
+</div>
+
+<script>
+// Lector de Excel/CSV sin dependencias externas
+const ExcelReader = {
+  read: function(arrayBuffer, fileName) {
+    const name = fileName.toLowerCase();
+    if (name.endsWith('.csv')) {
+      return this.readCSV(arrayBuffer);
+    } else {
+      return this.readXLSX(arrayBuffer);
+    }
+  },
+  readCSV: function(arrayBuffer) {
+    const text = new TextDecoder('utf-8').decode(arrayBuffer);
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
+    return lines.slice(1).map(line => {
+      const vals = line.split(',').map(v => v.replace(/"/g,'').trim());
+      const obj = {};
+      headers.forEach((h,i) => { obj[h] = vals[i] || ''; });
+      return obj;
+    });
+  },
+  readXLSX: function(arrayBuffer) {
+    // Parser XLSX básico para leer la primera hoja
+    try {
+      const bytes = new Uint8Array(arrayBuffer);
+      // Detectar si es formato XML (xlsx) o binario antiguo (xls)
+      const sig = String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]);
+      if (sig === 'PK\x03\x04') {
+        return this.parseXLSX(bytes);
+      } else {
+        throw new Error('Formato no soportado. Por favor usa .csv o .xlsx');
+      }
+    } catch(e) {
+      throw new Error(e.message || 'Error leyendo el archivo');
+    }
+  },
+  parseXLSX: function(bytes) {
+    // Descomprimir ZIP y leer sharedStrings y primera hoja
+    const zip = this.unzip(bytes);
+    const sharedStrings = this.getSharedStrings(zip);
+    const sheet = this.getFirstSheet(zip, sharedStrings);
+    return sheet;
+  },
+  unzip: function(bytes) {
+    // Leer entradas del ZIP
+    const files = {};
+    let i = 0;
+    while (i < bytes.length - 4) {
+      if (bytes[i]===0x50 && bytes[i+1]===0x4B && bytes[i+2]===0x03 && bytes[i+3]===0x04) {
+        const compression = bytes[i+8] | (bytes[i+9]<<8);
+        const compSize = bytes[i+18] | (bytes[i+19]<<8) | (bytes[i+20]<<16) | (bytes[i+21]<<24);
+        const nameLen = bytes[i+26] | (bytes[i+27]<<8);
+        const extraLen = bytes[i+28] | (bytes[i+29]<<8);
+        const name = new TextDecoder().decode(bytes.slice(i+30, i+30+nameLen));
+        const dataStart = i+30+nameLen+extraLen;
+        const compData = bytes.slice(dataStart, dataStart+compSize);
+        try {
+          if (compression === 0) {
+            files[name] = new TextDecoder('utf-8').decode(compData);
+          } else if (compression === 8) {
+            files[name] = new TextDecoder('utf-8').decode(this.inflate(compData));
+          }
+        } catch(e) {}
+        i = dataStart + compSize;
+      } else { i++; }
+    }
+    return files;
+  },
+  inflate: function(data) {
+    // Usar DecompressionStream si está disponible
+    return data; // fallback
+  },
+  getSharedStrings: function(zip) {
+    const xml = zip['xl/sharedStrings.xml'] || '';
+    const strings = [];
+    const re = /<t[^>]*>([\s\S]*?)<\/t>/g;
+    let m;
+    while ((m = re.exec(xml)) !== null) {
+      strings.push(m[1].replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"'));
+    }
+    return strings;
+  },
+  getFirstSheet: function(zip, sharedStrings) {
+    // Encontrar primera hoja
+    const wbXml = zip['xl/workbook.xml'] || '';
+    const sheetMatch = wbXml.match(/r:id="(rId\d+)"/);
+    let sheetFile = 'xl/worksheets/sheet1.xml';
+    const xml = zip[sheetFile] || '';
+    if (!xml) throw new Error('No se pudo leer la hoja del Excel');
+    
+    // Parsear filas y celdas
+    const rows = {};
+    const rowRe = /<row[^>]*r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g;
+    let rowM;
+    while ((rowM = rowRe.exec(xml)) !== null) {
+      const rowNum = parseInt(rowM[1]);
+      const rowXml = rowM[2];
+      const cells = {};
+      const cellRe = /<c[^>]*r="([A-Z]+)(\d+)"[^>]*(?:t="([^"]*)")?[^>]*>(?:[\s\S]*?<v>([\s\S]*?)<\/v>)?[\s\S]*?<\/c>/g;
+      let cellM;
+      while ((cellM = cellRe.exec(rowXml)) !== null) {
+        const col = cellM[1];
+        const type = cellM[3];
+        const val = cellM[4] || '';
+        if (type === 's') {
+          cells[col] = sharedStrings[parseInt(val)] || '';
+        } else {
+          cells[col] = val;
+        }
+      }
+      rows[rowNum] = cells;
+    }
+    
+    // Convertir a array de objetos
+    const rowNums = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+    if (rowNums.length < 2) return [];
+    const headerRow = rows[rowNums[0]];
+    const cols = Object.keys(headerRow).sort();
+    const headers = cols.map(c => headerRow[c]);
+    
+    return rowNums.slice(1).map(rn => {
+      const obj = {};
+      cols.forEach((c,i) => { obj[headers[i]] = rows[rn][c] || ''; });
+      return obj;
+    }).filter(r => Object.values(r).some(v => v !== ''));
+  }
+};
+</script>
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const WORKER_URL = 'https://inspectpro-api.ar0097147.workers.dev';
+let equipos = [];
+let mediaFiles = [];
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  cargarEquiposDesdeWorker();
+  updateSaveBtn();
+});
+
+// ============================================================
+// CARGAR EQUIPOS DESDE WORKER
+// ============================================================
+async function cargarEquiposDesdeWorker() {
+  try {
+    document.getElementById('excelCargandoSection') && document.getElementById('excelCargandoSection').classList.remove('hidden');
+    const r = await fetch(`${WORKER_URL}/equipos`);
+    if (!r.ok) throw new Error('No se pudo cargar');
+    const data = await r.json();
+    equipos = data.equipos || [];
+    if (equipos.length > 0) {
+      aplicarEquipos(data.fileName || 'base-de-datos');
+    }
+  } catch(e) {
+    console.error('Error cargando equipos:', e);
+  }
+}
+
+// ============================================================
+// EXCEL — sube a OneDrive y descarga desde OneDrive
+// ============================================================
+function loadExcel(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      equipos = ExcelReader.read(e.target.result, file.name);
+      if (!equipos || equipos.length === 0) { showToast('Excel vacío o sin datos', 'error'); return; }
+      showToast('Subiendo base de datos a OneDrive...', 'success');
+      const payload = JSON.stringify({ fileName: file.name, equipos });
+      const blob = new Blob([payload], { type: 'application/json' });
+      await uploadFile('InspectPro_Config', 'equipos.json', blob);
+      aplicarEquipos(file.name);
+      showToast(`${equipos.length} equipos guardados en OneDrive ✓`, 'success');
+    } catch(err) {
+      showToast('Error: ' + err.message, 'error');
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function descargarEquiposOneDrive() {
+  if (!accessToken) return;
+  try {
+    const r = await fetch(
+      'https://graph.microsoft.com/v1.0/me/drive/root:/InspectPro_Config/equipos.json:/content',
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (!r.ok) return; // archivo no existe aún, mostrar zona de carga
+    const data = await r.json();
+    equipos = data.equipos || [];
+    if (equipos.length > 0) {
+      aplicarEquipos(data.fileName || 'base-de-datos.xlsx');
+    }
+  } catch {}
+}
+
+function aplicarEquipos(fileName) {
+  const colName = Object.keys(equipos[0])[0];
+  const sel = document.getElementById('equipoSelect');
+  sel.innerHTML = '<option value="">— Selecciona un equipo —</option>';
+  equipos.forEach((eq, i) => {
+    const name = eq[colName] || eq[Object.keys(eq)[0]] || `Equipo ${i+1}`;
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = String(name).trim();
+    sel.appendChild(opt);
+  });
+  document.getElementById('excelFijoSection').classList.remove('hidden');
+  if (document.getElementById('excelCargandoSection')) document.getElementById('excelCargandoSection').classList.add('hidden');
+  document.getElementById('excelFileNameFijo').textContent = fileName;
+  document.getElementById('equipCountBadge2').textContent = `${equipos.length} equipos`;
+  updateSaveBtn();
+}
+
+function onEquipoChange() {
+  updatePath();
+  updateSaveBtn();
+}
+
+// ============================================================
+// TAG
+// ============================================================
+const TAG_REGEX = /^[A-Z0-9]{2,6}-[A-Z]{1,3}-[A-Z0-9]{3,8}$/;
+
+function validateTag(manual = false) {
+  const val = document.getElementById('tagInput').value.trim();
+  const badge = document.getElementById('tagBadge');
+  const badgeText = document.getElementById('tagBadgeText');
+  if (val && (TAG_REGEX.test(val) || val.length >= 4)) {
+    badge.classList.remove('hidden');
+    badgeText.textContent = val;
+    if (manual) showToast('TAG confirmado ✓', 'success');
+  } else {
+    badge.classList.add('hidden');
+  }
+  updatePath();
+  updateSaveBtn();
+}
+
+// ============================================================
+// PATH PREVIEW
+// ============================================================
+function updatePath() {
+  const selIdx = document.getElementById('equipoSelect').value;
+  const tag = document.getElementById('tagInput').value.trim() || '[ Ingresa TAG ]';
+  let equipoName = '[ Selecciona equipo ]';
+  let folderName = '[ Selecciona equipo ]';
+  if (selIdx !== '' && equipos[selIdx]) {
+    const eq = equipos[selIdx];
+    equipoName = String(Object.values(eq)[0]).trim();
+    folderName = `INSPECCION DE EQUIPOS_${equipoName}`;
+  }
+  document.getElementById('pathPreview').innerHTML =
+    `OneDrive/<br>└── <span style="color:var(--text);">${esc(folderName)}/</span><br>&nbsp;&nbsp;&nbsp;&nbsp;└── <span style="color:var(--accent);font-family:'Courier New',monospace;">${esc(tag)}/</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── fotos, videos...`;
+}
+function esc(s) { return s.replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ============================================================
+// MEDIA
+// ============================================================
+function captureMedia(type) {
+  if (type === 'photo') document.getElementById('photoInput').click();
+  else document.getElementById('videoInput').click();
+}
+
+function addFiles(input, type) {
+  Array.from(input.files).forEach(f => {
+    mediaFiles.push({ file: f, type });
+  });
+  input.value = '';
+  renderMedia();
+  updateSaveBtn();
+}
+
+function removeMedia(idx) {
+  mediaFiles.splice(idx, 1);
+  renderMedia();
+  updateSaveBtn();
+}
+
+function renderMedia() {
+  const grid = document.getElementById('mediaGrid');
+  const empty = document.getElementById('emptyMedia');
+  const badge = document.getElementById('mediaCountBadge');
+  badge.textContent = `${mediaFiles.length} archivos`;
+  if (!mediaFiles.length) {
+    grid.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = '';
+  mediaFiles.forEach((m, i) => {
+    const div = document.createElement('div');
+    div.className = 'media-thumb';
+    const url = URL.createObjectURL(m.file);
+    if (m.type === 'foto') {
+      div.innerHTML = `<img src="${url}" loading="lazy"><div class="type-badge">FOTO</div>`;
+    } else {
+      div.innerHTML = `<video src="${url}" muted playsinline></video><div class="type-badge">VIDEO</div>`;
+    }
+    div.innerHTML += `<button class="remove-btn" onclick="removeMedia(${i})">×</button>`;
+    grid.appendChild(div);
+  });
+}
+
+// ============================================================
+// SAVE BUTTON STATE
+// ============================================================
+function updateSaveBtn() {
+  const hasEquipo = document.getElementById('equipoSelect').value !== '';
+  const hasTag = document.getElementById('tagInput').value.trim().length >= 3;
+  const hasMedia = mediaFiles.length > 0;
+  document.getElementById('saveBtn').disabled = !(hasEquipo && hasTag && hasMedia);
+}
+
+// ============================================================
+// GUARDAR VIA WORKER
+// ============================================================
+async function guardar() {
+  const selIdx = document.getElementById('equipoSelect').value;
+  const eq = equipos[selIdx];
+  const equipoName = sanitizeName(String(Object.values(eq)[0]).trim());
+  const tag = sanitizeName(document.getElementById('tagInput').value.trim());
+  const notas = document.getElementById('notasInput').value.trim();
+
+  document.getElementById('progressSection').classList.remove('hidden');
+  document.getElementById('progressSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('saveBtn').disabled = true;
+  clearLog();
+
+  try {
+    addLog('info', `📁 Preparando archivos...`);
+    const formData = new FormData();
+    formData.append('equipo', equipoName);
+    formData.append('tag', tag);
+    if (notas) formData.append('notas', notas);
+
+    mediaFiles.forEach((m, i) => {
+      const ext = m.file.name.split('.').pop() || (m.type === 'foto' ? 'jpg' : 'mp4');
+      const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+      const fname = `${m.type}-${String(i+1).padStart(3,'0')}-${ts}.${ext}`;
+      formData.append('files', m.file);
+      formData.append('fileNames', fname);
+      formData.append('fileTypes', m.file.type);
+      addLog('info', `⬆ Preparando ${fname}...`);
+      setProgress(i, mediaFiles.length, fname);
+    });
+
+    addLog('info', `☁ Subiendo a OneDrive...`);
+    const r = await fetch(WORKER_URL, { method: 'POST', body: formData });
+    const data = await r.json();
+
+    if (!r.ok || data.error) throw new Error(data.error || 'Error desconocido');
+
+    setProgress(mediaFiles.length, mediaFiles.length, 'Completado');
+    data.archivos.forEach(f => addLog('ok', `✓ ${f}`));
+    addLog('ok', `🎉 Todo guardado en OneDrive/INSPECCION DE EQUIPOS_${equipoName}/${tag}/`);
+    showToast('¡Guardado exitosamente! ✓', 'success');
+    setTimeout(resetForm, 2000);
+
+  } catch (err) {
+    addLog('err', `✗ Error: ${err.message}`);
+    showToast('Error al guardar. Revisa el log.', 'error');
+    document.getElementById('saveBtn').disabled = false;
+  }
+}
+
+// ============================================================
+// ONEDRIVE API
+// ============================================================
+async function ensureFolder(path) {
+  const parts = path.split('/');
+  let current = '';
+  for (const part of parts) {
+    current = current ? `${current}/${part}` : part;
+    await createFolderIfNotExists(current);
+  }
+}
+
+async function createFolderIfNotExists(path) {
+  const parts = path.split('/');
+  const folderName = parts.pop();
+  const parentPath = parts.join('/');
+  const parentRef = parentPath ? `root:/${parentPath}:` : 'root';
+  const url = `https://graph.microsoft.com/v1.0/me/drive/${parentRef}/children`;
+  const body = { name: folderName, folder: {}, "@microsoft.graph.conflictBehavior": "rename" };
+  // Check if exists first
+  try {
+    const check = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${path}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (check.ok) return; // already exists
+  } catch {}
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok && r.status !== 409) {
+    const err = await r.text();
+    throw new Error(`No se pudo crear carpeta "${path}": ${err}`);
+  }
+}
+
+async function uploadFile(folderPath, fileName, fileOrBlob) {
+  const url = `https://graph.microsoft.com/v1.0/me/drive/root:/${folderPath}/${fileName}:/content`;
+  const r = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': fileOrBlob.type || 'application/octet-stream'
+    },
+    body: fileOrBlob
+  });
+  if (!r.ok) {
+    const err = await r.text();
+    throw new Error(`Error subiendo "${fileName}": ${err}`);
+  }
+  return r.json();
+}
+
+// ============================================================
+// DEMO MODE
+// ============================================================
+function simulateUpload() {
+  document.getElementById('progressSection').classList.remove('hidden');
+  document.getElementById('saveBtn').disabled = true;
+  clearLog();
+  const selIdx = document.getElementById('equipoSelect').value;
+  const eq = equipos[selIdx];
+  const equipoName = String(Object.values(eq)[0]).trim();
+  const tag = document.getElementById('tagInput').value.trim();
+
+  const steps = [
+    () => addLog('info', `📁 [DEMO] Creando ${equipoName}/`),
+    () => addLog('ok',   `✓ Carpeta equipo lista`),
+    () => addLog('info', `📁 [DEMO] Creando ${equipoName}/${tag}/`),
+    () => addLog('ok',   `✓ Carpeta TAG lista`),
+    ...mediaFiles.map((m, i) => () => {
+      const ext = m.type === 'foto' ? 'jpg' : 'mp4';
+      addLog('ok', `✓ [DEMO] ${m.type}-${String(i+1).padStart(3,'0')}.${ext}`);
+      setProgress(i+1, mediaFiles.length, `${m.type}-${i+1}.${ext}`);
+    }),
+    () => {
+      addLog('ok', `🎉 [DEMO] Simulación completa`);
+      showToast('Demo completo (sin subida real)', 'error');
+      setTimeout(resetForm, 2000);
+    }
+  ];
+  steps.forEach((fn, i) => setTimeout(fn, i * 600));
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function sanitizeName(s) {
+  return s.replace(/[\\/:*?"<>|]/g, '_').trim();
+}
+
+function setProgress(done, total, file) {
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFile').textContent = file;
+}
+
+function addLog(type, msg) {
+  const log = document.getElementById('uploadLog');
+  const line = document.createElement('div');
+  line.className = `log-line ${type}`;
+  line.textContent = msg;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+function clearLog() { document.getElementById('uploadLog').innerHTML = ''; }
+
+function resetForm() {
+  mediaFiles = [];
+  renderMedia();
+  document.getElementById('tagInput').value = '';
+  document.getElementById('notasInput').value = '';
+  document.getElementById('tagBadge').classList.add('hidden');
+  document.getElementById('equipoSelect').value = '';
+  updatePath();
+  updateSaveBtn();
+  document.getElementById('progressSection').classList.add('hidden');
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+// Init path
+updatePath();
+</script>
+</body>
+</html>
